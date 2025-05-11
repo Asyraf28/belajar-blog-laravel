@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Str;
 
 class BlogController extends Controller
 {
@@ -57,7 +58,39 @@ class BlogController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-        //
+        $request->validate([
+            'title' => 'required',
+            'content' => 'required',
+            'thumbnail' => 'image|mimes:jpeg,jpg,png|max:10240',
+        ],[
+            'title.required' => 'Judul wajib diisi',
+            'content.required' => 'Konten wajib diisi',
+            'thumbnail.image' => 'Hanya gambar yang diperbolehkan',
+            'thumbnail.mimes' => 'Ekstensi jpeg, jpg, png yang diperbolehkan',
+            'thumbnail.max' => 'Maksimal ukuran gambar 10MB'
+        ]);
+
+        if($request->hasFile('thumbnail')) {
+            if(isset($post->thumbnail) && file_exists(public_path(getenv('CUSTOM_THUMBNAIL_PATH'))."/".$post->thumbnail)) {
+                unlink(public_path(getenv('CUSTOM_THUMBNAIL_PATH'))."/".$post->thumbnail);
+            }
+            $image = $request->file('thumbnail');
+            $image_name = time()."_".$image->getClientOriginalName();
+            $destination_path = public_path(getenv('CUSTOM_THUMBNAIL_PATH'));
+            $image->move($destination_path, $image_name);
+        }
+
+        $data = [
+            'title' => $request->title,
+            'description' => $request->description,
+            'content' => $request->content,
+            'status' => $request->status,
+            'thumbnail' => isset($image_name)?$image_name:$post->thumbnail,
+            'slug' => $this->generateSlug($request->title, $post->id),
+        ];
+
+        Post::where('id', $post->id)->update($data);
+        return redirect()->route('member.blogs.index')->with('success', 'Data berhasil di-update');
     }
 
     /**
@@ -66,5 +99,20 @@ class BlogController extends Controller
     public function destroy(Post $post)
     {
         //
+    }
+
+    private function generateSlug($title, $id)
+    {
+        $slug = Str::slug($title);
+
+        $count = Post::where('slug', $slug)->when($id, function($query, $id){
+            return $query->where('id', '!=', $id);
+        })->count();
+
+        if($count > 0) {
+            $slug = $slug . "-" . ($count + 1);
+        }
+
+        return $slug;
     }
 }

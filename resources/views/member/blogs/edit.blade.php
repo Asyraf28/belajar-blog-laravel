@@ -19,7 +19,7 @@
                             </p>
                         </header>
 
-                        <form method="post" action="" class="mt-6 space-y-6" enctype="multipart/form-data">
+                        <form method="post" action="{{ route('member.blogs.update', ['post'=>$data->id]) }}" class="mt-6 space-y-6" enctype="multipart/form-data">
                             @csrf
                             @method('put')
                             <div>
@@ -31,15 +31,18 @@
                                 <x-text-input id="description" name="description" type="text" class="mt-1 block w-full" value="{{ old('description', $data->description) }}"/>
                             </div>
                             <div>
+                                @isset($data->thumbnail)
+                                    <img src="{{ asset(getenv('CUSTOM_THUMBNAIL_PATH')."/".$data->thumbnail) }}" class="rounded-md border-gray-300 max-w-40 p-2" alt="">
+                                @endisset
                                 <x-input-label for="file_input" value="Thumbnail" />
-                                <input type="file" class="w-full border border-gray-300 rounded-md"/>
+                                <input type="file" name="thumbnail" class="w-full border border-gray-300 rounded-md"/>
                             </div>
                             <div>
-                                <x-textarea-trix value="{{ $data->content }}" id="x" name="content"></x-textarea-trix>
+                                <x-textarea-trix value="{!! old('content',$data->content) !!}" id="x" name="content"></x-textarea-trix>
                             </div>
                             <div>
                                 <x-select name="status">
-                                    <option value="draf" {{ (old('status', $data->status)=='draft')?'selected':'' }}>Simpan sebagai draf</option>
+                                    <option value="draft" {{ (old('status', $data->status)=='draft')?'selected':'' }}>Simpan sebagai draft</option>
                                     <option value="publish" {{ (old('status', $data->status)=='publish')?'selected':'' }}>Publish</option>
                                 </x-select>
                             </div>
