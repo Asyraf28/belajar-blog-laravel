@@ -1,7 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight ">
             Pengaturan Blog
+            <a href="{{ route('member.blogs.create') }}" class="bg-blue-400 p-2 rounded-md text-white text-sm">Tambah</a>
         </h2>
     </x-slot>
 
@@ -34,9 +35,13 @@
                                 <td class="border px-6 py-4 text-center">
                                     <a href='{{ route("member.blogs.edit",['post'=>$value->id]) }}' class="text-blue-600 hover:text-blue-400 px-2">edit</a>
                                     <a href='' class="text-blue-600 hover:text-blue-400 px-2">lihat</a>
-                                    <button type=' submit' class='text-red-600 hover:text-red-400 px-2'>
-                                        hapus
-                                    </button>
+                                    <form action="{{ route('member.blogs.destroy', ['post'=>$value->id]) }}" class="inline" onsubmit="return confirm('Yakin akan menghapus tulisan ini?')" method="post">
+                                        @csrf
+                                        @method('delete')
+                                        <button type=' submit' class='text-red-600 hover:text-red-400 px-2'>
+                                            hapus
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                             @endforeach
